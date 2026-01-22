@@ -47,23 +47,34 @@ read -rp "Type YES to continue: " CONFIRM
 timedatectl set-ntp true
 
 ### =====================================
-### PARTITION DISK
+### PARTITION DISK (ROBUST)
 ### =====================================
 
 wipefs -af "$DISK"
 sgdisk -Z "$DISK"
 
-# Create EFI partition
-sgdisk -n 1:0:$EFI_SIZE -t 1:ef00 -c 1:"EFI"
-# Create LUKS partition
-sgdisk -n 2:0:0 -t 2:8300 -c 2:"Linux LUKS"
+# Create partitions
+sgdisk -n 1:0:+512M -t 1:ef00 "$DISK"
+sgdisk -n 2:0:0     -t 2:8300 "$DISK"
 
 partprobe "$DISK"
 udevadm settle
 
-# Detect partitions robustly by label
-EFI_PART=$(lsblk -no PATH -l "$DISK" | while read p; do blkid -o value -s PARTLABEL "$p" | grep -q "^EFI$" && echo "$p"; done)
-LUKS_PART=$(lsblk -no PATH -l "$DISK" | while read p; do blkid -o value -s PARTLABEL "$p" | grep -q "^Linux LUKS$" && echo "$p"; done)
+# Get PARTUUIDs directly from sgdisk (no udev guessing)
+EFI_PARTUUID=$(sgdisk -i 1 "$DISK" | awk -F: '/Partition unique GUID/ {gsub(/ /,"",$2); print $2}')
+LUKS_PARTUUID=$(sgdisk -i 2 "$DISK" | awk -F: '/Partition unique GUID/ {gsub(/ /,"",$2); print $2}')
+
+EFI_PART="/dev/disk/by-partuuid/$EFI_PARTUUID"
+LUKS_PART="/dev/disk/by-partuuid/$LUKS_PARTUUID"
+
+# Wait for device nodes
+for i in {1..10}; do
+  [[ -b "$EFI_PART" ]] && [[ -b "$LUKS_PART" ]] && break
+  sleep 1
+done
+
+[[ -b "$EFI_PART" ]] || { echo "EFI block device not found"; exit 1; }
+[[ -b "$LUKS_PART" ]] || { echo "LUKS block device not found"; exit 1; }
 
 mkfs.fat -F32 "$EFI_PART"
 
