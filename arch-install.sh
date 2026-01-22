@@ -46,37 +46,29 @@ read -rp "Type YES to continue: " CONFIRM
 
 timedatectl set-ntp true
 
+
 ### =====================================
-### PARTITION DISK (ROBUST)
+### PARTITION DISK (NVMe-SAFE)
 ### =====================================
 
 wipefs -af "$DISK"
 sgdisk -Z "$DISK"
 
-# Create partitions
 sgdisk -n 1:0:+512M -t 1:ef00 "$DISK"
 sgdisk -n 2:0:0     -t 2:8300 "$DISK"
 
 partprobe "$DISK"
-udevadm settle
+sleep 2   # give kernel time to create nodes
 
-# Get PARTUUIDs directly from sgdisk (no udev guessing)
-EFI_PARTUUID=$(sgdisk -i 1 "$DISK" | awk -F: '/Partition unique GUID/ {gsub(/ /,"",$2); print $2}')
-LUKS_PARTUUID=$(sgdisk -i 2 "$DISK" | awk -F: '/Partition unique GUID/ {gsub(/ /,"",$2); print $2}')
+# Deterministic NVMe partition paths
+EFI_PART="${DISK}p1"
+LUKS_PART="${DISK}p2"
 
-EFI_PART="/dev/disk/by-partuuid/$EFI_PARTUUID"
-LUKS_PART="/dev/disk/by-partuuid/$LUKS_PARTUUID"
-
-# Wait for device nodes
-for i in {1..10}; do
-  [[ -b "$EFI_PART" ]] && [[ -b "$LUKS_PART" ]] && break
-  sleep 1
-done
-
-[[ -b "$EFI_PART" ]] || { echo "EFI block device not found"; exit 1; }
-[[ -b "$LUKS_PART" ]] || { echo "LUKS block device not found"; exit 1; }
+[[ -b "$EFI_PART" ]] || { echo "EFI block device not found: $EFI_PART"; exit 1; }
+[[ -b "$LUKS_PART" ]] || { echo "LUKS block device not found: $LUKS_PART"; exit 1; }
 
 mkfs.fat -F32 "$EFI_PART"
+
 
 ### =====================================
 ### LUKS SETUP
