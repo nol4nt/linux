@@ -28,8 +28,8 @@
             "warning": 30,
             "critical": 15
         },
-        "format": "󰂄 {capacity}",
-        "format-discharging": "{icon} {capacity}",
+        "format": "󰂄{capacity}",
+        "format-discharging": "{icon}{capacity}",
         "format-icons": ["󰂎","󰁺","󰁻","󰁼","󰁽","󰁾","󰁿","󰂀","󰂁","󰂂","󰁹"],
         "tooltip": true
     },
@@ -62,14 +62,16 @@
 
     "backlight": {
     	"device": "intel_backlight",
-    	"format": "{icon}  {percent}",
-    	"format-icons": ["󰃞 "]
+    	"format": "{icon} {percent}",
+    	"format-icons": ["󰃞"]
     },
 
     "pulseaudio": {
-    	"format": "{icon} {volume}",
+    	"format": "{icon} {volume} {format_source}",
     	"format-bluetooth": "{icon}󰂯 {volume}",
-    	"format-muted": "󰝟",
+    	"format-muted": "󰝟 {format_source}",
+        "format-source": "󰍬 {volume}",
+        "format-source-muted": "󰍭",
     	"format-icons": {
         	"headphone": "󰋋",
         	"headset": "󰋎",
@@ -88,12 +90,12 @@
 	    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
 	    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
 	    "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
-        "on-click": "~/Apps/wofi-bluetooth/wofi-bluetooth"
+        "on-click": "/home/nolan/.config/wofi/scripts/bluetooth-menu.sh"
     },
     "network": {
         "interface": "wlan0",
-        "format-wifi": "   {signalStrength}",
-        "format-ethernet": "󰈀  {ipaddr}",
+        "format-wifi": " {signalStrength}",
+        "format-ethernet": "󰈀 {ipaddr}",
         "format-disconnected": "󰖪  Disconnected",
         "tooltip-format": "{ifname} via {gwaddr}",
         "tooltip-format-wifi": "{essid} {frequency}GHz {signalStrength}\n{ifname}\nIp: {ipaddr}",
@@ -103,7 +105,7 @@
             "exec": "~/.config/waybar/modules/wifi.sh",
             "interval": 5
         },
-        "on-click": "~/Apps/wofi-wifi2/wifimenu.sh"
+        "on-click": "/home/nolan/.config/wofi/scripts/wifi-menu.sh"
     },
     "sway/workspaces": {
 	    "format": "{icon}",
@@ -119,13 +121,5 @@
 		    "default": ""
   	    },
   	    "sort-by-number": true
-    },
-    "custom/nolan": {
-        "exec": "~/Documents/code/linux-config/waybar-scripts/wifi/wifi",
-        "interval": 5,
-        "return-type": "json",
-        "tooltip": true,
-        "tooltip-format": "<tt><small>{tooltips}</small></tt>",
-        "format": "nolan {text}"
     }
 }

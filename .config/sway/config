@@ -7,12 +7,16 @@ set $term foot
 # Your preferred application launcher
 set $menu wofi --show drun
 
+font pango:JetBrains Mono 8
+
 # Start Applications
 exec_always mako
 
 ### Output configuration
 # Wallpaper
-output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
+# output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
+# output * bg /home/nolan/.config/backgrounds/0PuSwi8.png fill
+output * bg /home/nolan/.config/backgrounds/74j9SFG.png fill
 #   output HDMI-A-1 resolution 1920x1080 position 1920,0
 
 ### Idle configuration
@@ -26,7 +30,7 @@ exec swayidle -w \
 # Touchpad config
 input type:touchpad {
 	dwt enabled
-        tap enabled
+    tap enabled
 }
 
 ### Key bindings
